@@ -21,7 +21,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Maven Build & Test
+      - name: Build & Test with Maven
         run: mvn -U clean verify
 
       - name: SonarCloud Scan
