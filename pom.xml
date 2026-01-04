@@ -22,8 +22,8 @@
 
     <!-- Properties -->
     <properties>
-        <!-- Java version MUST match GitHub Actions -->
-        <java.version>11</java.version>
+        <!-- Java version -->
+        <java.version>17</java.version>
 
         <!-- SonarCloud configuration -->
         <sonar.projectKey>PrajwalSMallur_cicd-java-maven-project</sonar.projectKey>
@@ -49,7 +49,7 @@
     <build>
         <plugins>
 
-            <!-- SonarCloud Maven Plugin (FIXES sonar:sonar error) -->
+            <!-- SonarCloud Maven Plugin -->
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
