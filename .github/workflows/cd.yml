@@ -1,0 +1,50 @@
+name: CD Pipeline - Deploy & Test
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline - Java Maven with SonarCloud"]
+    types:
+      - completed
+
+jobs:
+  cd:
+    name: Continuous Deployment & Testing
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download artifact from CI
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cicd-java-maven-artifact
+
+      # 2. Decide target environment based on branch
+      - name: Decide deployment environment
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          echo "Source branch: $BRANCH"
+
+          if [[ "$BRANCH" == "main" ]]; then
+            echo "ENV=PROD" >> $GITHUB_ENV
+          else
+            echo "ENV=DEV" >> $GITHUB_ENV
+          fi
+
+      # 3. Deploy application (demo deployment)
+      - name: Deploy application
+        run: |
+          echo "Deploying to $ENV environment"
+          java -jar *.jar &
+          sleep 15
+
+      # 4. Continuous Testing (Smoke / Health Check)
+      - name: Health Check
+        run: |
+          echo "Running health check..."
+          curl -f http://localhost:8080 || exit 1
+
+      # 5. Notify deployment status
+      - name: Notify deployment status
+        run: |
+          echo "Deployment to $ENV environment successful 🚀"
