@@ -1,55 +1,41 @@
-name: CD Pipeline - Deploy & Test
+name: CD Pipeline - Deploy to EC2
 
 on:
   workflow_run:
-    workflows:
-      - CI Pipeline - Java Maven with SonarCloud
+    workflows: ["CI Pipeline - Java Maven with SonarCloud"]
     types:
       - completed
 
 jobs:
-  cd:
-    name: Continuous Deployment & Testing
+  deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Download artifact from CI workflow
-      - name: Download build artifact from CI
+      # 1️⃣ Download artifact from CI
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: cicd-java-maven-artifact
-          run-id: ${{ github.event.workflow_run.id }}
-          repository: ${{ github.repository }}
-          path: ./artifact
+          path: target
 
-      # 2. Decide target environment based on branch
-      - name: Decide deployment environment
-        run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          echo "Source branch: $BRANCH"
+      # 2️⃣ Copy JAR to EC2
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "target/*.jar"
+          target: "/home/ubuntu/app"
 
-          if [[ "$BRANCH" == "main" ]]; then
-            echo "ENV=PROD" >> $GITHUB_ENV
-          else
-            echo "ENV=DEV" >> $GITHUB_ENV
-          fi
-
-      # 3. Deploy application (demo deployment)
-      - name: Deploy application
-        run: |
-          echo "Deploying to $ENV environment"
-          ls -l artifact
-          java -jar artifact/*.jar &
-          sleep 15
-
-      # 4. Continuous Testing (Health Check)
-      - name: Health Check
-        run: |
-          echo "Running health check..."
-          curl -f http://localhost:8080 || exit 1
-
-      # 5. Notification
-      - name: Notify deployment status
-        run: |
-          echo "Deployment to $ENV environment successful 🚀"
+      # 3️⃣ Restart application on EC2
+      - name: Restart application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            pkill -f jar || true
+            nohup java -jar /home/ubuntu/app/*.jar > app.log 2>&1 &
