@@ -16,19 +16,22 @@
     <groupId>com.helloworld</groupId>
     <artifactId>helloworld</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>helloworld</name>
     <description>Demo project for Spring Boot</description>
 
-    <!-- FIX 1: Match Java version with GitHub Actions -->
+    <!-- Properties -->
     <properties>
+        <!-- Java version MUST match GitHub Actions -->
         <java.version>11</java.version>
 
-        <!-- FIX 2: SonarCloud configuration -->
+        <!-- SonarCloud configuration -->
         <sonar.projectKey>PrajwalSMallur_cicd-java-maven-project</sonar.projectKey>
         <sonar.organization>prajwalsmallur</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
+    <!-- Dependencies -->
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -42,12 +45,23 @@
         </dependency>
     </dependencies>
 
+    <!-- Build Plugins -->
     <build>
         <plugins>
+
+            <!-- SonarCloud Maven Plugin (FIXES sonar:sonar error) -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
+
+            <!-- Spring Boot Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
         </plugins>
     </build>
 
