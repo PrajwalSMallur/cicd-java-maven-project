@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout Source Code
+      # 1. Checkout source code
       - name: Checkout source code
         uses: actions/checkout@v4
 
@@ -25,19 +25,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Install dependencies + Build + Unit Tests
+      # 3. Build & run unit tests
       - name: Build & Test with Maven
         run: mvn -U clean verify
 
-      # 4. Static Application Security Testing (SAST)
-      #    Quality Gate decides Go / No-Go
+      # 4. SonarCloud SAST + Quality Gate
       - name: SonarCloud Scan
         run: mvn sonar:sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # 5. Upload build artifact (JAR)
-      #    This will be used by CD pipeline
+      # 5. Upload artifact for CD
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
