@@ -13,29 +13,24 @@
         <relativePath/>
     </parent>
 
-    <!-- Project coordinates -->
     <groupId>com.prajwal.devops</groupId>
     <artifactId>cicd-java-maven-project</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <!-- Project name shown in SonarCloud -->
     <name>cicd-java-maven-project</name>
     <description>CI/CD Java Maven project with GitHub Actions and SonarCloud</description>
 
-    <!-- Properties -->
     <properties>
-        <!-- Java -->
         <java.version>17</java.version>
 
-        <!-- SonarCloud -->
         <sonar.projectKey>PrajwalSMallur_cicd-java-maven-project</sonar.projectKey>
         <sonar.projectName>cicd-java-maven-project</sonar.projectName>
         <sonar.organization>prajwalsmallur</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
-    <!-- Dependencies -->
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -45,3 +40,25 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
