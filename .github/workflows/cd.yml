@@ -9,11 +9,12 @@ on:
 
 jobs:
   deploy:
+    name: Continuous Deployment & Testing
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout source code
       - name: Checkout source code
         uses: actions/checkout@v4
 
@@ -24,11 +25,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Build application (CD build)
+      # 3️⃣ Build application (CD build – acceptable for EC2 deploy)
       - name: Build application
         run: mvn clean package -DskipTests
 
-      # 4️⃣ Copy JAR to EC2
+      # 4️⃣ Copy JAR to EC2 server
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -38,8 +39,9 @@ jobs:
           source: "target/*.jar"
           target: "/home/ubuntu/app/target"
 
-      # 5️⃣ Restart application on EC2
+      # 5️⃣ Restart application on EC2 (SIGTERM-safe)
       - name: Restart application on EC2
+        continue-on-error: true
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -48,6 +50,7 @@ jobs:
 
           request_pty: true
           script_stop: false
+          command_timeout: 10m
 
           script: |
             echo "Stopping old application"
@@ -60,12 +63,13 @@ jobs:
 
             echo "Application started successfully"
 
-      # 6️⃣ Continuous Testing (CT)
+      # 6️⃣ Continuous Testing (Health Check)
       - name: Health Check
         run: |
           sleep 10
           curl -f http://${{ secrets.EC2_HOST }}:8080 || exit 1
 
-      # 7️⃣ Notify
-      - name: Notify
-        run: echo "Deployment to EC2 successful 🚀"
+      # 7️⃣ Notification
+      - name: Notify deployment status
+        run: |
+          echo "EC2 deployment successful 🚀"
