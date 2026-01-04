@@ -23,11 +23,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Build project again (jobs are stateless)
+      # 3️⃣ Build artifact again (safe & simple)
       - name: Build project
         run: mvn clean package -DskipTests
 
-      # 4️⃣ Copy JAR to EC2
+      # 4️⃣ Copy ONLY the jar to EC2
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -35,9 +35,9 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "target/*.jar"
-          target: "/home/ubuntu/app"
+          target: "/home/ubuntu/app/target"
 
-      # 5️⃣ Restart application safely on EC2
+      # 5️⃣ Restart application safely
       - name: Restart application on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -46,4 +46,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             pkill -f "java -jar" || true
-            nohup java -jar /home/ubuntu/app/*.jar > app.log 2>&1 &
+            cd /home/ubuntu/app/target
+            setsid nohup java -jar *.jar > app.log 2>&1 < /dev/null &
