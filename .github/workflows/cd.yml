@@ -13,17 +13,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Download artifact from CI
-      - name: Download build artifact
+      # 1. Download artifact from CI workflow
+      - name: Download build artifact from CI
         uses: actions/download-artifact@v4
         with:
           name: cicd-java-maven-artifact
+          run-id: ${{ github.event.workflow_run.id }}
+          repository: ${{ github.repository }}
+          path: ./artifact
 
-      # 2. Decide target environment based on branch
+      # 2. Decide target environment
       - name: Decide deployment environment
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
-          echo "Source branch: $BRANCH"
+          echo "Branch: $BRANCH"
 
           if [[ "$BRANCH" == "main" ]]; then
             echo "ENV=PROD" >> $GITHUB_ENV
@@ -31,20 +34,21 @@ jobs:
             echo "ENV=DEV" >> $GITHUB_ENV
           fi
 
-      # 3. Deploy application (demo deployment)
+      # 3. Deploy application (demo)
       - name: Deploy application
         run: |
           echo "Deploying to $ENV environment"
-          java -jar *.jar &
+          ls -l artifact
+          java -jar artifact/*.jar &
           sleep 15
 
-      # 4. Continuous Testing (Smoke / Health Check)
+      # 4. Continuous Testing (CT)
       - name: Health Check
         run: |
           echo "Running health check..."
           curl -f http://localhost:8080 || exit 1
 
-      # 5. Notify deployment status
-      - name: Notify deployment status
+      # 5. Notification
+      - name: Notify
         run: |
-          echo "Deployment to $ENV environment successful 🚀"
+          echo "Deployment to $ENV successful 🚀"
