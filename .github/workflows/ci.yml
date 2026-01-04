@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    name: Build and SonarCloud Analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +20,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build & Test with Maven
+      - name: Build & Test
         run: mvn -U clean verify
 
       - name: SonarCloud Scan
