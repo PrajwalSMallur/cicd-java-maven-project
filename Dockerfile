@@ -1,7 +1,14 @@
-FROM openjdk:8-jdk-alpine
+# Use Java 17 runtime image
+FROM eclipse-temurin:17-jre
 
-ADD ./target/helloworld-0.0.1-SNAPSHOT.jar helloworld-0.0.1-SNAPSHOT.jar
+# Set working directory
+WORKDIR /app
 
+# Copy JAR from CI artifact
+COPY target/*.jar app.jar
+
+# Expose application port
 EXPOSE 8080
 
-CMD java -jar helloworld-0.0.1-SNAPSHOT.jar
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
