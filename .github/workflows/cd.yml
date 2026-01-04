@@ -1,4 +1,4 @@
-name: CD Pipeline - Deploy to EC2
+name: CD Pipeline - Deploy & Test (EC2)
 
 on:
   workflow_run:
@@ -25,11 +25,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Build application (CD build – acceptable for EC2 deploy)
+      # 3️⃣ Build application
       - name: Build application
         run: mvn clean package -DskipTests
 
-      # 4️⃣ Copy JAR to EC2 server
+      # 4️⃣ Copy JAR to EC2
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -39,7 +39,7 @@ jobs:
           source: "target/*.jar"
           target: "/home/ubuntu/app/target"
 
-      # 5️⃣ Restart application on EC2 (SIGTERM-safe)
+      # 5️⃣ Restart application on EC2 (ignore SIGTERM 143)
       - name: Restart application on EC2
         continue-on-error: true
         uses: appleboy/ssh-action@v1.0.3
@@ -61,15 +61,21 @@ jobs:
             nohup java -jar *.jar > app.log 2>&1 &
             disown
 
-            echo "Application started successfully"
+            echo "Application started"
 
-      # 6️⃣ Continuous Testing (Health Check)
-      - name: Health Check
-        run: |
-          sleep 10
-          curl -f http://${{ secrets.EC2_HOST }}:8080 || exit 1
+      # 6️⃣ Continuous Testing (Health Check INSIDE EC2)
+      - name: Health Check (inside EC2)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Running health check on server"
+            curl -f http://localhost:8080 || exit 1
+            echo "Health check passed"
 
-      # 7️⃣ Notification
+      # 7️⃣ Notify
       - name: Notify deployment status
         run: |
-          echo "EC2 deployment successful 🚀"
+          echo "Deployment & Continuous Testing successful 🚀"
