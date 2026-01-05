@@ -25,9 +25,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Build application
-      - name: Build application
-        run: mvn clean package -DskipTests
+     
 
       # 4️⃣ Copy JAR to EC2
       - name: Copy JAR to EC2
